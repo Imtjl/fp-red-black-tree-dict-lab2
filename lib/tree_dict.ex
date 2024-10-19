@@ -18,5 +18,5 @@ defmodule TreeDict do
 
   defstruct tree: nil
 
-  def new(), do: %TreeDict{}
+  def new, do: %TreeDict{}
 end
