@@ -22,7 +22,7 @@
   <img alt="Elixir CI" src="https://img.shields.io/github/actions/workflow/status/Imtjl/fp-red-black-tree-dict-lab2/ci.yml?branch=main&style=for-the-badge&logo=github-actions&labelColor=000000&color=teal">
 </a>
   <a aria-label="Coverage Status" href="https://coveralls.io/github/Imtjl/fp-red-black-tree-dict-lab2?branch=main">
-    <img alt="Coverage Status" src="https://img.shields.io/coveralls/github/Imtjl/fp-red-black-tree-dict-lab2/main?style=for-the-badge&labelColor=000000&logo=coveralls&color=yellow">
+    <img alt="Coverage Status" src="https://img.shields.io/coveralls/github/Imtjl/fp-red-black-tree-dict-lab2/main?style=for-the-badge&labelColor=000000&logo=coveralls&color=green">
   </a>
 </p>
   
