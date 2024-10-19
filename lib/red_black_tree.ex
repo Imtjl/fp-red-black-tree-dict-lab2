@@ -99,15 +99,15 @@ defmodule RedBlackTree do
   end
 
   defp balance(node) do
-    node = if is_red(node.right), do: rotate_left(node), else: node
-    node = if is_red(node.left) and is_red(node.left.left), do: rotate_right(node), else: node
-    node = if is_red(node.left) and is_red(node.right), do: flip_colors(node), else: node
+    node = if red?(node.right), do: rotate_left(node), else: node
+    node = if red?(node.left) and red?(node.left.left), do: rotate_right(node), else: node
+    node = if red?(node.left) and red?(node.right), do: flip_colors(node), else: node
     node
   end
 
   # Вспомогательные функции
-  defp is_red(%RedBlackTree{color: :red}), do: true
-  defp is_red(_), do: false
+  defp red?(%RedBlackTree{color: :red}), do: true
+  defp red?(_), do: false
 
   defp recolor(nil), do: nil
 
@@ -131,7 +131,7 @@ defmodule RedBlackTree do
 
   defp check_properties(%RedBlackTree{color: color, left: left, right: right} = node) do
     # Проверяем отсутствие последовательных красных узлов
-    if is_red(node) and (is_red(left) or is_red(right)) do
+    if red?(node) and (red?(left) or red?(right)) do
       {:error, :red_red_violation}
     else
       # Рекурсивно проверяем левое и правое поддеревья
