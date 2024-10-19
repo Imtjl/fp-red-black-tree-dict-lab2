@@ -19,7 +19,7 @@ defmodule RedBlackTree do
           right: t() | nil
         }
 
-  # ОПЕРАЦИЯ ПОИСКА !!!
+  # LOOKUP OPERATION
   @spec get(t() | nil, any()) :: any() | nil
   def get(nil, _key), do: nil
 
@@ -31,7 +31,7 @@ defmodule RedBlackTree do
     end
   end
 
-  # ОПЕРАЦИЯ ВСТАВКА !!!
+  # INSERT OPERATION
   @spec insert(t() | nil, any(), any()) :: t()
   def insert(tree, key, value) do
     tree
@@ -52,7 +52,7 @@ defmodule RedBlackTree do
         key < k ->
           %RedBlackTree{node | left: do_insert(node.left, key, value)}
 
-        key > k ->
+        true ->
           %RedBlackTree{node | right: do_insert(node.right, key, value)}
       end
 
@@ -65,27 +65,166 @@ defmodule RedBlackTree do
 
   defp ensure_black_root(tree), do: tree
 
-  defp rotate_left(%RedBlackTree{right: right} = h) do
-    h = %RedBlackTree{h | right: right.left}
+  # DELETE OPERATION
+  @spec delete(t() | nil, any()) :: t() | nil
+  def delete(tree, key) do
+    if tree == nil do
+      nil
+    else
+      tree = do_delete(tree, key)
 
+      if tree != nil do
+        %RedBlackTree{tree | color: :black}
+      else
+        nil
+      end
+    end
+  end
+
+  defp do_delete(nil, _key), do: nil
+
+  defp do_delete(node, key) do
+    node =
+      if key < node.key do
+        node =
+          if node.left != nil do
+            node =
+              if not red?(node.left) and not red?(node.left.left) do
+                move_red_left(node)
+              else
+                node
+              end
+
+            %RedBlackTree{node | left: do_delete(node.left, key)}
+          else
+            node
+          end
+
+        node
+      else
+        node =
+          if red?(node.left) do
+            rotate_right(node)
+          else
+            node
+          end
+
+        if key == node.key and node.right == nil do
+          # Node to delete found and has no right child
+          nil
+        else
+          node =
+            if node.right != nil do
+              node =
+                if not red?(node.right) and not red?(node.right.left) do
+                  move_red_right(node)
+                else
+                  node
+                end
+
+              if key == node.key do
+                # Node to delete found
+                min_node = min(node.right)
+
+                %RedBlackTree{
+                  node
+                  | key: min_node.key,
+                    value: min_node.value,
+                    right: delete_min(node.right)
+                }
+              else
+                %RedBlackTree{node | right: do_delete(node.right, key)}
+              end
+            else
+              node
+            end
+
+          node
+        end
+      end
+
+    if node != nil do
+      balance(node)
+    else
+      nil
+    end
+  end
+
+  # MOVE RED LEFT
+  defp move_red_left(node) do
+    node = flip_colors(node)
+
+    node =
+      if node.right != nil and red?(node.right.left) do
+        node = %RedBlackTree{node | right: rotate_right(node.right)}
+        node = rotate_left(node)
+        flip_colors(node)
+      else
+        node
+      end
+
+    node
+  end
+
+  # MOVE RED RIGHT
+  defp move_red_right(node) do
+    node = flip_colors(node)
+
+    node =
+      if node.left != nil and red?(node.left.left) do
+        node = rotate_right(node)
+        flip_colors(node)
+      else
+        node
+      end
+
+    node
+  end
+
+  # FIND MINIMUM NODE
+  defp min(node) do
+    if node.left == nil do
+      node
+    else
+      min(node.left)
+    end
+  end
+
+  # DELETE MINIMUM NODE
+  defp delete_min(node) do
+    if node.left == nil do
+      nil
+    else
+      node =
+        if not red?(node.left) and not red?(node.left.left) do
+          move_red_left(node)
+        else
+          node
+        end
+
+      node = %RedBlackTree{node | left: delete_min(node.left)}
+      balance(node)
+    end
+  end
+
+  # ROTATIONS AND BALANCING
+  defp rotate_left(%RedBlackTree{right: right} = h) do
     %RedBlackTree{
       color: h.color,
       key: right.key,
       value: right.value,
-      left: %RedBlackTree{h | color: :red},
+      left: %RedBlackTree{h | right: right.left, color: :red},
       right: right.right
     }
   end
 
   defp rotate_right(%RedBlackTree{left: left} = h) do
-    h = %RedBlackTree{h | left: left.right}
-
     %RedBlackTree{
       color: h.color,
       key: left.key,
       value: left.value,
       left: left.left,
-      right: %RedBlackTree{h | color: :red}
+      right: %RedBlackTree{h | left: left.right, color: :red}
     }
   end
 
@@ -99,13 +238,31 @@ defmodule RedBlackTree do
   end
 
   defp balance(node) do
-    node = if red?(node.right), do: rotate_left(node), else: node
-    node = if red?(node.left) and red?(node.left.left), do: rotate_right(node), else: node
-    node = if red?(node.left) and red?(node.right), do: flip_colors(node), else: node
+    node =
+      if red?(node.right) do
+        rotate_left(node)
+      else
+        node
+      end
+
+    node =
+      if red?(node.left) and red?(node.left.left) do
+        rotate_right(node)
+      else
+        node
+      end
+
+    node =
+      if red?(node.left) and red?(node.right) do
+        flip_colors(node)
+      else
+        node
+      end
+
     node
   end
 
-  # Вспомогательные функции
+  # HELPER FUNCTIONS
   defp red?(%RedBlackTree{color: :red}), do: true
   defp red?(_), do: false
 
@@ -118,7 +275,7 @@ defmodule RedBlackTree do
   defp toggle_color(:red), do: :black
   defp toggle_color(:black), do: :red
 
-  # ПРОВЕРЯЕМ ДЕРЕВО НА КОРРЕКТНОСТЬ
+  # VALIDATE RED-BLACK TREE PROPERTIES
   @spec valid_red_black_tree?(t()) :: boolean()
   def valid_red_black_tree?(tree) do
     case check_properties(tree) do
@@ -130,11 +287,10 @@ defmodule RedBlackTree do
   defp check_properties(nil), do: {:ok, 1}
 
   defp check_properties(%RedBlackTree{color: color, left: left, right: right} = node) do
-    # Проверяем отсутствие последовательных красных узлов
+    # Check for consecutive red nodes
     if red?(node) and (red?(left) or red?(right)) do
       {:error, :red_red_violation}
     else
-      # Рекурсивно проверяем левое и правое поддеревья
       with {:ok, left_black_height} <- check_properties(left),
            {:ok, right_black_height} <- check_properties(right),
            true <- left_black_height == right_black_height do

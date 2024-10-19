@@ -23,6 +23,12 @@ defmodule TreeDict do
     RedBlackTree.get(tree, key)
   end
 
+  @spec delete(t(), any()) :: t()
+  def delete(%TreeDict{tree: tree} = dict, key) do
+    new_tree = RedBlackTree.delete(tree, key)
+    %TreeDict{dict | tree: new_tree}
+  end
+
   # def insert(%TreeDict{tree: tree} = dict, key, value) do
   #   %TreeDict{tree: insert_into_tree(tree, key, value)}
   # end

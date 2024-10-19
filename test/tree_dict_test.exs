@@ -87,4 +87,44 @@ defmodule TreeDictTest do
       assert TreeDict.get(dict, i) == "value #{i}"
     end)
   end
+
+  test "delete from empty dictionary" do
+    dict = TreeDict.new()
+    dict = TreeDict.delete(dict, :key)
+    assert TreeDict.get(dict, :key) == nil
+  end
+
+  test "insert and delete keys" do
+    dict = TreeDict.new()
+    dict = TreeDict.insert(dict, :a, 1)
+    dict = TreeDict.insert(dict, :b, 2)
+    dict = TreeDict.insert(dict, :c, 3)
+
+    dict = TreeDict.delete(dict, :b)
+    assert TreeDict.get(dict, :b) == nil
+    assert TreeDict.get(dict, :a) == 1
+    assert TreeDict.get(dict, :c) == 3
+  end
+
+  test "delete non-existing key" do
+    dict = TreeDict.new()
+    dict = TreeDict.insert(dict, :a, 1)
+    dict = TreeDict.delete(dict, :b)
+    assert TreeDict.get(dict, :a) == 1
+  end
+
+  test "delete all keys" do
+    dict = TreeDict.new()
+    dict = TreeDict.insert(dict, :a, 1)
+    dict = TreeDict.insert(dict, :b, 2)
+    dict = TreeDict.insert(dict, :c, 3)
+
+    dict = TreeDict.delete(dict, :a)
+    dict = TreeDict.delete(dict, :b)
+    dict = TreeDict.delete(dict, :c)
+
+    assert TreeDict.get(dict, :a) == nil
+    assert TreeDict.get(dict, :b) == nil
+    assert TreeDict.get(dict, :c) == nil
+  end
 end
