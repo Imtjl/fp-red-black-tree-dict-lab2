@@ -29,24 +29,28 @@ defmodule TreeDict do
     %TreeDict{dict | tree: new_tree}
   end
 
-  # def insert(%TreeDict{tree: tree} = dict, key, value) do
-  #   %TreeDict{tree: insert_into_tree(tree, key, value)}
-  # end
+  @spec filter(t(), (any(), any() -> boolean())) :: t()
+  def filter(%TreeDict{tree: tree}, func) do
+    %TreeDict{tree: RedBlackTree.filter(tree, func)}
+  end
 
-  # filter, mapping, folding
-  # def filter(dict, func) do
-  #   %TreeDict{tree: RedBlackTree.filter(dict.tree, func)}
-  # end
-  #
-  # def map(dict, func) do
-  #   %TreeDict{tree: RedBlackTree.map(dict.tree, func)}
-  # end
-  #
-  # def foldl(dict, acc, func) do
-  #   RedBlackTree.foldl(dict.tree, acc, func)
-  # end
-  #
-  # def foldr(dict, acc, func) do
-  #   RedBlackTree.foldr(dict.tree, acc, func)
-  # end
+  @spec map(t(), (any(), any() -> any())) :: t()
+  def map(%TreeDict{tree: tree}, func) do
+    %TreeDict{tree: RedBlackTree.map(tree, func)}
+  end
+
+  @spec foldl(t(), acc :: any(), (any(), any(), acc :: any() -> any())) :: any()
+  def foldl(%TreeDict{tree: tree}, acc, func) do
+    RedBlackTree.foldl(tree, acc, func)
+  end
+
+  @spec foldr(t(), acc :: any(), (any(), any(), acc :: any() -> any())) :: any()
+  def foldr(%TreeDict{tree: tree}, acc, func) do
+    RedBlackTree.foldr(tree, acc, func)
+  end
+
+  @spec merge(t(), t()) :: t()
+  def merge(%TreeDict{tree: tree1}, %TreeDict{tree: tree2}) do
+    %TreeDict{tree: RedBlackTree.merge(tree1, tree2)}
+  end
 end

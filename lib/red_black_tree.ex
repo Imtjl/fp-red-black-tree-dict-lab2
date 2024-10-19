@@ -19,6 +19,78 @@ defmodule RedBlackTree do
           right: t() | nil
         }
 
+  # FILTER OPERATION
+  @spec filter(t() | nil, (any(), any() -> boolean())) :: t() | nil
+  def filter(nil, _func), do: nil
+
+  def filter(%RedBlackTree{key: key, value: value, left: left, right: right} = node, func) do
+    left_filtered = filter(left, func)
+    right_filtered = filter(right, func)
+
+    if func.(key, value) do
+      %RedBlackTree{
+        color: node.color,
+        key: key,
+        value: value,
+        left: left_filtered,
+        right: right_filtered
+      }
+    else
+      # Merge the filtered subtrees without the current node
+      merge(left_filtered, right_filtered)
+    end
+  end
+
+  # MAP OPERATION
+  @spec map(t() | nil, (any(), any() -> any())) :: t() | nil
+  def map(nil, _func), do: nil
+
+  def map(%RedBlackTree{key: key, value: value, left: left, right: right} = node, func) do
+    mapped_value = func.(key, value)
+
+    %RedBlackTree{
+      color: node.color,
+      key: key,
+      value: mapped_value,
+      left: map(left, func),
+      right: map(right, func)
+    }
+  end
+
+  # LEFT FOLD OPERATION
+  @spec foldl(t() | nil, acc :: any(), (any(), any(), acc :: any() -> any())) :: any()
+  def foldl(nil, acc, _func), do: acc
+
+  def foldl(%RedBlackTree{key: key, value: value, left: left, right: right}, acc, func) do
+    acc
+    |> foldl(left, func)
+    |> func.(key, value)
+    |> foldl(right, func)
+  end
+
+  # RIGHT FOLD OPERATION
+  @spec foldr(t() | nil, acc :: any(), (any(), any(), acc :: any() -> any())) :: any()
+  def foldr(nil, acc, _func), do: acc
+
+  def foldr(%RedBlackTree{key: key, value: value, left: left, right: right}, acc, func) do
+    acc
+    |> foldr(right, func)
+    |> func.(key, value)
+    |> foldr(left, func)
+  end
+
+  # MERGE TWO TREES
+  @spec merge(t() | nil, t() | nil) :: t() | nil
+  def merge(nil, tree), do: tree
+  def merge(tree, nil), do: tree
+
+  def merge(left_tree, right_tree) do
+    # Insert all elements of right_tree into left_tree
+    foldl(right_tree, left_tree, fn key, value, acc ->
+      insert(acc, key, value)
+    end)
+  end
+
   # LOOKUP OPERATION
   @spec get(t() | nil, any()) :: any() | nil
   def get(nil, _key), do: nil
@@ -86,67 +158,67 @@ defmodule RedBlackTree do
   defp do_delete(node, key) do
     node =
       if key < node.key do
-        node =
-          if node.left != nil do
-            node =
-              if not red?(node.left) and not red?(node.left.left) do
-                move_red_left(node)
-              else
-                node
-              end
-
-            %RedBlackTree{node | left: do_delete(node.left, key)}
-          else
-            node
-          end
-
-        node
+        node = move_red_left_if_needed(node)
+        %RedBlackTree{node | left: do_delete(node.left, key)}
       else
-        node =
-          if red?(node.left) do
-            rotate_right(node)
-          else
-            node
-          end
-
-        if key == node.key and node.right == nil do
-          # Node to delete found and has no right child
-          nil
-        else
-          node =
-            if node.right != nil do
-              node =
-                if not red?(node.right) and not red?(node.right.left) do
-                  move_red_right(node)
-                else
-                  node
-                end
-
-              if key == node.key do
-                # Node to delete found
-                min_node = min(node.right)
-
-                %RedBlackTree{
-                  node
-                  | key: min_node.key,
-                    value: min_node.value,
-                    right: delete_min(node.right)
-                }
-              else
-                %RedBlackTree{node | right: do_delete(node.right, key)}
-              end
-            else
-              node
-            end
-
-          node
-        end
+        node = rotate_right_if_needed(node)
+        node = handle_delete_right(node, key)
       end
 
     if node != nil do
       balance(node)
     else
       nil
+    end
+  end
+
+  defp handle_delete_right(node, key) do
+    if key == node.key and node.right == nil do
+      # Node to delete found and has no right child
+      nil
+    else
+      node = move_red_right_if_needed(node)
+
+      node =
+        if key == node.key do
+          # Node to delete found
+          min_node = min(node.right)
+
+          %RedBlackTree{
+            node
+            | key: min_node.key,
+              value: min_node.value,
+              right: delete_min(node.right)
+          }
+        else
+          %RedBlackTree{node | right: do_delete(node.right, key)}
+        end
+
+      node
+    end
+  end
+
+  defp move_red_left_if_needed(node) do
+    if node.left != nil and not red?(node.left) and not red?(node.left.left) do
+      move_red_left(node)
+    else
+      node
+    end
+  end
+
+  defp move_red_right_if_needed(node) do
+    if node.right != nil and not red?(node.right) and not red?(node.right.left) do
+      move_red_right(node)
+    else
+      node
+    end
+  end
+
+  defp rotate_right_if_needed(node) do
+    if red?(node.left) do
+      rotate_right(node)
+    else
+      node
     end
   end
 
