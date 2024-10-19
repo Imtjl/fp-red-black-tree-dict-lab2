@@ -60,34 +60,40 @@ defmodule RedBlackTree do
   # LEFT FOLD OPERATION
   @spec foldl(t() | nil, acc :: any(), (any(), any(), acc :: any() -> any())) :: any()
   def foldl(nil, acc, _func), do: acc
+  def foldl([], acc, _func), do: acc
 
   def foldl(%RedBlackTree{key: key, value: value, left: left, right: right}, acc, func) do
-    acc
-    |> foldl(left, func)
-    |> func.(key, value)
-    |> foldl(right, func)
+    acc = foldl(left, acc, func)
+    acc = func.(key, value, acc)
+    foldl(right, acc, func)
   end
 
   # RIGHT FOLD OPERATION
   @spec foldr(t() | nil, acc :: any(), (any(), any(), acc :: any() -> any())) :: any()
   def foldr(nil, acc, _func), do: acc
+  def foldr([], acc, _func), do: acc
 
   def foldr(%RedBlackTree{key: key, value: value, left: left, right: right}, acc, func) do
-    acc
-    |> foldr(right, func)
-    |> func.(key, value)
-    |> foldr(left, func)
+    acc = foldr(right, acc, func)
+    acc = func.(key, value, acc)
+    foldr(left, acc, func)
   end
 
   # MERGE TWO TREES
   @spec merge(t() | nil, t() | nil) :: t() | nil
+  def merge(nil, nil), do: nil
   def merge(nil, tree), do: tree
   def merge(tree, nil), do: tree
 
-  def merge(left_tree, right_tree) do
-    # Insert all elements of right_tree into left_tree
+  @spec merge(t() | nil, t() | nil, (any(), any() -> any())) :: t() | nil
+  def merge(left_tree, right_tree, value_merge_fun \\ fn _k, v1, v2 -> v2 end) do
     foldl(right_tree, left_tree, fn key, value, acc ->
-      insert(acc, key, value)
+      if existing_value = get(acc, key) do
+        new_value = value_merge_fun.(key, existing_value, value)
+        insert(acc, key, new_value)
+      else
+        insert(acc, key, value)
+      end
     end)
   end
 
