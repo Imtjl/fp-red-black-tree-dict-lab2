@@ -15,4 +15,8 @@ defmodule TreeDict do
   def hello do
     :world
   end
+
+  defstruct tree: nil
+
+  def new(), do: %TreeDict{}
 end
