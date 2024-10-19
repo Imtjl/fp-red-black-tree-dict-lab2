@@ -1,4 +1,4 @@
-defmodule RedBlackTreeTest do
+defmodule RedBlackTreeUnitTest do
   use ExUnit.Case
   alias RedBlackTree
 

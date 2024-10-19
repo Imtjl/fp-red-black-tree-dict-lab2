@@ -32,7 +32,8 @@ defmodule TreeDict.MixProject do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:propcheck, "~> 1.4.1", only: [:test]},
-      {:excoveralls, "~> 0.18", only: :test}
+      {:excoveralls, "~> 0.18", only: :test},
+      {:stream_data, "~> 0.5", only: :test}
     ]
   end
 
