@@ -11,7 +11,6 @@ defmodule TreeDict.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
@@ -23,7 +22,7 @@ defmodule TreeDict.MixProject do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:propcheck, "~> 1.4.1", only: [:test]},
-      {:excoveralls, "~> 0.14", only: :test}
+      {:excoveralls, "~> 0.18", only: :test}
     ]
   end
 end
