@@ -13,9 +13,8 @@ defmodule RedBlackTreeFoldTest do
     #  1   3
     #
 
-
     result = RedBlackTree.foldl(tree, [], fn k, v, acc -> [{k, v} | acc] end)
-    # folding should be 1, 2, 3, 
+    # folding should be 1, 2, 3,
     # BUT we prepend each element in accumulator:
     # [{k, v} | acc] - it results in reverse-ordering
     expected = [{3, "three"}, {2, "two"}, {1, "one"}]
@@ -35,7 +34,7 @@ defmodule RedBlackTreeFoldTest do
     #
 
     result = RedBlackTree.foldr(tree, [], fn k, v, acc -> [{k, v} | acc] end)
-    # folding should be 1, 2, 3, 
+    # folding should be 1, 2, 3,
     # BUT we prepend each element in accumulator:
     # [{k, v} | acc] - it results in reverse-ordering
     expected = [{1, "one"}, {2, "two"}, {3, "three"}]
