@@ -80,21 +80,48 @@ defmodule RedBlackTree do
   end
 
   # MERGE TWO TREES
-  @spec merge(t() | nil, t() | nil) :: t() | nil
-  def merge(nil, nil), do: nil
-  def merge(nil, tree), do: tree
-  def merge(tree, nil), do: tree
+  @spec merge(t() | nil, t() | nil, (any(), any(), any() -> any())) :: t() | nil
+  def merge(left_tree, right_tree, value_merge_fun \\ &default_value_merge_fun/3)
 
-  @spec merge(t() | nil, t() | nil, (any(), any() -> any())) :: t() | nil
-  def merge(left_tree, right_tree, value_merge_fun \\ fn _k, v1, v2 -> v2 end) do
-    foldl(right_tree, left_tree, fn key, value, acc ->
-      if existing_value = get(acc, key) do
-        new_value = value_merge_fun.(key, existing_value, value)
-        insert(acc, key, new_value)
-      else
-        insert(acc, key, value)
-      end
+  def merge(nil, tree, _value_merge_fun), do: tree
+  def merge(tree, nil, _value_merge_fun), do: tree
+
+  def merge(left_tree, right_tree, value_merge_fun) do
+    # Collect key-value pairs from both trees
+    kv_pairs_left = to_list(left_tree)
+    kv_pairs_right = to_list(right_tree)
+
+    # Combine key-value pairs
+    kv_pairs_combined =
+      (kv_pairs_left ++ kv_pairs_right)
+      |> Enum.group_by(fn {key, _value} -> key end, fn {_key, value} -> value end)
+      |> Enum.map(fn {key, values} ->
+        # Merge values for the same key using the value_merge_fun
+        merged_value = Enum.reduce(values, &value_merge_fun.(key, &1, &2))
+        {key, merged_value}
+      end)
+
+    # Sort key-value pairs to ensure consistent insertion order
+    kv_pairs_sorted = Enum.sort_by(kv_pairs_combined, fn {key, _value} -> key end)
+
+    # Build a new tree from the sorted key-value pairs
+    Enum.reduce(kv_pairs_sorted, nil, fn {key, value}, acc ->
+      insert(acc, key, value)
     end)
+  end
+
+  def to_list(nil), do: []
+
+  def to_list(%RedBlackTree{left: left, right: right, key: key, value: value}) do
+    to_list(left) ++ [{key, value}] ++ to_list(right)
+  end
+
+  defp default_value_merge_fun(_key, v1, v2) do
+    # Combine the values into a list, remove duplicates, and sort them
+    [v1, v2]
+    |> List.flatten()
+    |> Enum.uniq()
+    |> Enum.sort()
   end
 
   # LOOKUP OPERATION
@@ -167,8 +194,9 @@ defmodule RedBlackTree do
         node = move_red_left_if_needed(node)
         %RedBlackTree{node | left: do_delete(node.left, key)}
       else
-        node = rotate_right_if_needed(node)
-        node = handle_delete_right(node, key)
+        node
+        |> rotate_right_if_needed()
+        |> handle_delete_right(key)
       end
 
     if node != nil do
