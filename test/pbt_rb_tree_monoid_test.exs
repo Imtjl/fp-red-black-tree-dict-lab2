@@ -5,7 +5,7 @@ defmodule RedBlackTreeMonoidPropertyTest do
 
   property "merging with nil (neutral element) does not change the tree" do
     check all(
-            keys <- uniq_list_of(integer()),
+            keys <- uniq_list_of(integer(), min_length: 1, max_tries: 1000),
             values <- list_of(term()),
             max_runs: 50
           ) do
@@ -24,11 +24,11 @@ defmodule RedBlackTreeMonoidPropertyTest do
 
   property "associative property of merging two trees" do
     check all(
-            keys1 <- uniq_list_of(integer(), min_length: 1, max_length: 20),
+            keys1 <- uniq_list_of(integer(), min_length: 1, max_tries: 1000),
             values1 <- list_of(term(), length: length(keys1)),
-            keys2 <- uniq_list_of(integer(), min_length: 1, max_length: 20),
+            keys2 <- uniq_list_of(integer(), min_length: 1, max_tries: 1000),
             values2 <- list_of(term(), length: length(keys2)),
-            keys3 <- uniq_list_of(integer(), min_length: 1, max_length: 20),
+            keys3 <- uniq_list_of(integer(), min_length: 1, max_tries: 1000),
             values3 <- list_of(term(), length: length(keys3)),
             max_runs: 100
           ) do

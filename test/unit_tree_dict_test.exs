@@ -127,4 +127,75 @@ defmodule TreeDictTest do
     assert TreeDict.get(dict, :b) == nil
     assert TreeDict.get(dict, :c) == nil
   end
+
+  test "filtering keys based on value" do
+    dict = TreeDict.new()
+    dict = TreeDict.insert(dict, :key1, 10)
+    dict = TreeDict.insert(dict, :key2, 20)
+    dict = TreeDict.insert(dict, :key3, 30)
+
+    filtered_dict = TreeDict.filter(dict, fn _key, value -> value > 15 end)
+
+    assert TreeDict.get(filtered_dict, :key1) == nil
+    assert TreeDict.get(filtered_dict, :key2) == 20
+    assert TreeDict.get(filtered_dict, :key3) == 30
+  end
+
+  # Тесты на отображение (map)
+  test "applying map function to all values" do
+    dict = TreeDict.new()
+    dict = TreeDict.insert(dict, :key1, 10)
+    dict = TreeDict.insert(dict, :key2, 20)
+    dict = TreeDict.insert(dict, :key3, 30)
+
+    mapped_dict = TreeDict.map(dict, fn _key, value -> value * 2 end)
+
+    assert TreeDict.get(mapped_dict, :key1) == 20
+    assert TreeDict.get(mapped_dict, :key2) == 40
+    assert TreeDict.get(mapped_dict, :key3) == 60
+  end
+
+  # Тесты на свёртки (левая и правая)
+  test "left fold applies function from left to right" do
+    dict = TreeDict.new()
+    dict = TreeDict.insert(dict, 1, 2)
+    dict = TreeDict.insert(dict, 3, 4)
+    dict = TreeDict.insert(dict, 5, 6)
+
+    result = TreeDict.foldl(dict, 0, fn _key, value, acc -> acc + value end)
+    assert result == 12
+  end
+
+  test "right fold applies function from right to left" do
+    dict = TreeDict.new()
+    dict = TreeDict.insert(dict, 1, 2)
+    dict = TreeDict.insert(dict, 3, 4)
+    dict = TreeDict.insert(dict, 5, 6)
+
+    result = TreeDict.foldr(dict, 0, fn _key, value, acc -> acc + value end)
+    assert result == 12
+  end
+
+  # Check monoid properties
+  test "monoid property: merging with empty TreeDict" do
+    dict1 = TreeDict.new()
+    dict2 = TreeDict.insert(TreeDict.new(), :key, "value")
+
+    merged_left = TreeDict.merge(dict1, dict2)
+    merged_right = TreeDict.merge(dict2, dict1)
+
+    assert merged_left == dict2
+    assert merged_right == dict2
+  end
+
+  test "monoid property: associative merging" do
+    dict1 = TreeDict.insert(TreeDict.new(), :key1, "value1")
+    dict2 = TreeDict.insert(TreeDict.new(), :key2, "value2")
+    dict3 = TreeDict.insert(TreeDict.new(), :key3, "value3")
+
+    merged_left = TreeDict.merge(TreeDict.merge(dict1, dict2), dict3)
+    merged_right = TreeDict.merge(dict1, TreeDict.merge(dict2, dict3))
+
+    assert merged_left == merged_right
+  end
 end
